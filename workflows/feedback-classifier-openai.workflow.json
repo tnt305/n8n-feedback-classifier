@@ -119,7 +119,7 @@
         "operation": "completion",
         "respondWith": "text",
         "completionTitle": "=Cảm ơn {{ $json['Họ và tên'] ?? $json.ho_ten }}!",
-        "completionMessage": "=<h2>GÓP Ý / ĐỀ XUẤT CẢI TIẾN</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Góp ý đã được chuyển tới đội sản phẩm. Chúng tôi sẽ xem xét và phản hồi qua email <strong>{{ $json[\"Email\"] ?? $json.email }}</strong> trong vòng <strong>3 ngày làm việc</strong>.</p>",
+        "completionMessage": "=<h2>GÓP Ý / ĐỀ XUẤT CẢI TIẾN</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Phản hồi được phân loại là <strong>Góp ý / Đề xuất cải tiến</strong>.</p>",
         "options": {}
       }
     },
@@ -136,7 +136,7 @@
         "operation": "completion",
         "respondWith": "text",
         "completionTitle": "=Cảm ơn {{ $json['Họ và tên'] ?? $json.ho_ten }}!",
-        "completionMessage": "=<h2>BÁO LỖI</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Lỗi đã được ghi nhận và tạo ticket ưu tiên cao cho đội kỹ thuật. SLA phản hồi: <strong>24 giờ</strong> qua email <strong>{{ $json[\"Email\"] ?? $json.email }}</strong>.</p>",
+        "completionMessage": "=<h2>BÁO LỖI</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Phản hồi được phân loại là <strong>Báo lỗi hệ thống</strong>.</p>",
         "options": {}
       }
     },
@@ -153,7 +153,7 @@
         "operation": "completion",
         "respondWith": "text",
         "completionTitle": "=Cảm ơn {{ $json['Họ và tên'] ?? $json.ho_ten }}!",
-        "completionMessage": "=<h2>CÂU HỎI</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Câu hỏi đã được chuyển tới đội hỗ trợ. Chúng tôi sẽ trả lời qua email <strong>{{ $json[\"Email\"] ?? $json.email }}</strong> trong vòng <strong>1 ngày làm việc</strong>.</p>",
+        "completionMessage": "=<h2>CÂU HỎI</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Phản hồi được phân loại là <strong>Câu hỏi cần giải đáp</strong>.</p>",
         "options": {}
       }
     },
@@ -170,7 +170,7 @@
         "operation": "completion",
         "respondWith": "text",
         "completionTitle": "=Cảm ơn {{ $json['Họ và tên'] ?? $json.ho_ten }}!",
-        "completionMessage": "=<h2>CHƯA PHÂN LOẠI</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Hệ thống chưa xác định được nhóm phù hợp cho phản hồi của bạn. Nội dung đã được chuyển sang hàng đợi rà soát thủ công.</p>",
+        "completionMessage": "=<h2>CHƯA PHÂN LOẠI</h2><p><em>&quot;{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}&quot;</em></p><p>Phản hồi được phân loại là <strong>Chưa xác định (chờ xử lý)</strong>.</p>",
         "options": {}
       }
     },
