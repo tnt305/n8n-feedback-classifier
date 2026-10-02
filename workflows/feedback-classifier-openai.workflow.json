@@ -175,6 +175,23 @@
       }
     },
     {
+      "parameters": {
+        "fromEmail": "ai-guru@tinix.ai",
+        "toEmail": "={{ $json['Email'] ?? $json.email }}",
+        "subject": "=[AI Guru x TiniX] Phản hồi tự động: Đã tiếp nhận câu hỏi của bạn",
+        "text": "=Chào {{ $json['Họ và tên'] ?? $json.ho_ten }},\n\nHệ thống AI Guru x TiniX đã tiếp nhận câu hỏi của bạn và phân loại thành công vào nhánh Câu hỏi:\n\"{{ $json['Nội dung phản hồi'] ?? $json.noi_dung }}\"\n\nĐội ngũ hỗ trợ kỹ thuật sẽ kiểm tra và phản hồi hướng dẫn chi tiết đến bạn trong vòng 24 giờ làm việc.\n\nTrân trọng,\nĐội ngũ Hỗ trợ Kỹ thuật AI Guru x TiniX",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0009-4a09-9a09-000000000009",
+      "name": "Gui email xac nhan",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        280,
+        420
+      ]
+    },
+    {
       "id": "a1b2c3d4-0008-4a08-9a08-000000000008",
       "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
@@ -239,6 +256,17 @@
         [
           {
             "node": "Ket qua - Khac",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ket qua - Cau hoi": {
+      "main": [
+        [
+          {
+            "node": "Gui email xac nhan",
             "type": "main",
             "index": 0
           }
