@@ -1,7 +1,8 @@
-# %% bench_classifier.py - benchmark phan loai phan hoi bang Ollama, mo phong node Text Classifier cua n8n
+# %% bench_classifier.py - benchmark kiem thu model/prompt qua API Ollama (smoke test 10 ca)
 import json
 import time
 import urllib.request
+from pathlib import Path
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
@@ -65,26 +66,38 @@ def classify(model: str, text: str) -> tuple[str, float]:
 
 
 def main():
+    script_dir = Path(__file__).resolve().parent
     results = {}
     for model in MODELS:
-        rows, correct, latencies = [], 0, []
+        rows = []
+        correct = 0
+        steady_latencies = []
+        cold_start_ms = 0.0
+
         for i, (text, expected) in enumerate(TEST_CASES, 1):
             got, ms = classify(model, text)
-            ok = got == expected
+            ok = (got == expected)
             correct += ok
-            latencies.append(ms)
+            if i == 1:
+                cold_start_ms = ms
+            else:
+                steady_latencies.append(ms)
             rows.append((i, expected, got, ok, round(ms)))
             print(f"[{model}] #{i}: expect={expected} got={got} {'OK' if ok else 'FAIL'} {ms:.0f}ms", flush=True)
-        latencies.sort()
+
+        steady_latencies.sort()
         results[model] = {
             "rows": rows,
             "accuracy": correct / len(TEST_CASES),
-            "latency_p50_ms": round(latencies[len(latencies) // 2]),
-            "latency_p95_ms": round(latencies[int(len(latencies) * 0.95) - 1]),
+            "cold_start_ms": round(cold_start_ms),
+            "latency_p50_ms": round(steady_latencies[len(steady_latencies) // 2]) if steady_latencies else round(cold_start_ms),
+            "latency_p95_ms": round(steady_latencies[-1]) if steady_latencies else round(cold_start_ms),
         }
     print(json.dumps(results, ensure_ascii=False, indent=2))
-    with open("artifacts/n8n-feedback-classifier/bench_results.json", "w") as f:
+    output_file = script_dir / "bench_results.json"
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
+    print(f"Saved benchmark results to {output_file}")
 
 
 if __name__ == "__main__":

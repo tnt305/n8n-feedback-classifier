@@ -25,8 +25,15 @@ docs/
 ## Cài đặt
 
 ```bash
-# 1. Ollama + model
+# 1. Ollama + cau hinh bind cong tren Linux
 curl -fsSL https://ollama.com/install.sh | sh
+
+# Cau hinh OLLAMA_HOST de container Docker ket noi duoc qua bridge
+sudo mkdir -p /etc/systemd/system/ollama.service.d
+echo -e "[Service]\nEnvironment=\"OLLAMA_HOST=0.0.0.0:11434\"" | sudo tee /etc/systemd/system/ollama.service.d/environment.conf
+sudo systemctl daemon-reload && sudo systemctl restart ollama
+
+# Pull model
 ollama pull qwen3:4b-instruct
 
 # 2. n8n
@@ -46,14 +53,14 @@ docker run -d --name n8n -p 5678:5678 \
 4. Bấm **Publish**, mở `http://localhost:5678/form/phan-hoi-khach-hang`.
 
 Khách điền form → AI phân loại → trang kết quả căn giữa màn hình hiển thị đúng
-nhóm kèm tên khách và cam kết SLA.
+nhóm kèm tên khách và thông báo phân loại thực tế.
 
 | Nhánh | Trang kết quả |
 |---|---|
-| Góp ý | Cảm ơn + cam kết phản hồi 3 ngày |
-| Báo lỗi | Ticket ưu tiên cao, SLA 24 giờ |
-| Câu hỏi | Chuyển đội hỗ trợ, trả lời 1 ngày |
-| Không rõ | Đưa vào hàng đợi rà soát thủ công |
+| Góp ý | Xác nhận phân loại là Góp ý / Đề xuất cải tiến |
+| Báo lỗi | Xác nhận phân loại là Báo lỗi hệ thống |
+| Câu hỏi | Xác nhận phân loại là Câu hỏi cần giải đáp |
+| Không rõ | Xác nhận phân loại là Chưa xác định (chờ rà soát) |
 
 ## Kiểm thử bằng curl
 
