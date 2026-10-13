@@ -1,5 +1,7 @@
 # %% bench_classifier.py - benchmark kiem thu model/prompt qua API Ollama (smoke test 10 ca)
 import json
+import math
+import statistics
 import time
 import urllib.request
 from pathlib import Path
@@ -65,40 +67,75 @@ def classify(model: str, text: str) -> tuple[str, float]:
         return "parse_error", latency
 
 
+def percentile(sorted_values: list[float], p: float) -> float:
+    """Tính percentile theo phương pháp nearest-rank (ceiling).
+
+    Với N=9 phần tử (warm-state):
+      P50 = statistics.median (trung vị - phần tử thứ 5)
+      P95 = sorted_values[ceil(0.95 * 9) - 1] = sorted_values[8] (phần tử cuối)
+    """
+    n = len(sorted_values)
+    k = math.ceil(p / 100.0 * n) - 1
+    return sorted_values[max(0, min(k, n - 1))]
+
+
 def main():
     script_dir = Path(__file__).resolve().parent
     results = {}
     for model in MODELS:
         rows = []
         correct = 0
-        steady_latencies = []
         cold_start_ms = 0.0
 
+        # -- Thu thập kết quả 10 ca --
+        all_latencies = []
         for i, (text, expected) in enumerate(TEST_CASES, 1):
             got, ms = classify(model, text)
             ok = (got == expected)
             correct += ok
-            if i == 1:
-                cold_start_ms = ms
-            else:
-                steady_latencies.append(ms)
+            all_latencies.append(ms)
             rows.append((i, expected, got, ok, round(ms)))
-            print(f"[{model}] #{i}: expect={expected} got={got} {'OK' if ok else 'FAIL'} {ms:.0f}ms", flush=True)
+            print(f"[{model}] #{i}: expect={expected} got={got} "
+                  f"{'OK' if ok else 'FAIL'} {ms:.0f}ms", flush=True)
 
-        steady_latencies.sort()
+        # -- Tách cold-start (lần gọi đầu) ra khỏi tập warm-state --
+        cold_start_ms = all_latencies[0]
+        warm_latencies = sorted(all_latencies[1:])  # 9 phần tử ở trạng thái ổn định
+
+        # -- Tính P50 bằng statistics.median, P95 bằng nearest-rank --
+        p50 = statistics.median(warm_latencies)
+        p95 = percentile(warm_latencies, 95)
+
         results[model] = {
             "rows": rows,
             "accuracy": correct / len(TEST_CASES),
             "cold_start_ms": round(cold_start_ms),
-            "latency_p50_ms": round(steady_latencies[len(steady_latencies) // 2]) if steady_latencies else round(cold_start_ms),
-            "latency_p95_ms": round(steady_latencies[-1]) if steady_latencies else round(cold_start_ms),
+            "warm_latencies_sorted_ms": [round(v) for v in warm_latencies],
+            "latency_p50_ms": round(p50),
+            "latency_p95_ms": round(p95),
+            "note": (
+                f"Cold-start ({round(cold_start_ms)} ms) đã được loại "
+                f"khỏi tập 9 warm-state latencies. "
+                f"P50 = statistics.median, P95 = nearest-rank ceiling."
+            ),
         }
     print(json.dumps(results, ensure_ascii=False, indent=2))
+
+    # -- Ghi kết quả vào scripts/bench_results.json --
     output_file = script_dir / "bench_results.json"
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     print(f"Saved benchmark results to {output_file}")
 
+    # -- Đồng bộ sang artifacts nếu thư mục tồn tại --
+    artifacts_dir = script_dir.parent.parent / "artifacts" / "n8n-feedback-classifier"
+    if artifacts_dir.exists():
+        art_output = artifacts_dir / "bench_results.json"
+        with open(art_output, "w", encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+        print(f"Synced benchmark results to {art_output}")
+
 
 if __name__ == "__main__":
     main()
+

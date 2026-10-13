@@ -1,5 +1,7 @@
 # n8n-feedback-classifier
 
+> Mã nguồn chính thức: [tnt305/n8n-feedback-classifier](https://github.com/tnt305/n8n-feedback-classifier)
+
 Phân loại phản hồi khách hàng tự động bằng AI trong n8n - nhận form web, phân loại
 thành **góp ý / báo lỗi / câu hỏi** (hoặc *không rõ*), rồi trả trang kết quả ngay
 trên trình duyệt. Không cần webhook ngoài, không cần dịch vụ form bên thứ ba.
@@ -36,10 +38,11 @@ sudo systemctl daemon-reload && sudo systemctl restart ollama
 # Pull model
 ollama pull qwen3:4b-instruct
 
-# 2. n8n
+# 2. n8n (phien ban on dinh 1.110.1 da verify)
 docker run -d --name n8n -p 5678:5678 \
   --add-host=host.docker.internal:host-gateway \
-  -v n8n_data:/home/node/.n8n n8nio/n8n:latest
+  -v n8n_data:/home/node/.n8n n8nio/n8n:1.110.1
+# Hoac dung n8nio/n8n:latest neu muon thu nghiem phien ban moi nhat
 ```
 
 ## Sử dụng
@@ -60,7 +63,7 @@ nhóm kèm tên khách và thông báo phân loại thực tế.
 | Góp ý | Xác nhận phân loại là Góp ý / Đề xuất cải tiến |
 | Báo lỗi | Xác nhận phân loại là Báo lỗi hệ thống |
 | Câu hỏi | Xác nhận phân loại là Câu hỏi cần giải đáp |
-| Không rõ | Xác nhận phân loại là Chưa xác định (chờ rà soát) |
+| Chưa xác định (Other) | Xác nhận phân loại là Chưa xác định (chờ xử lý) |
 
 ## Kiểm thử bằng curl
 
@@ -78,11 +81,14 @@ curl -F 'field-0=Nguyễn Văn An' -F 'field-1=an@example.com' \
 python3 scripts/bench_classifier.py
 ```
 
-| Model | Đúng/10 mẫu | Độ trễ trung vị |
-|---|---|---|
-| qwen2.5:7b | 10/10 | ~0,4 s |
-| tinix-lm | 9/10 | ~0,12 s |
-| qwen3:4b-instruct | 9/10 | ~1,5 s |
+| Model | Đúng trên 10 ca (Smoke Test) | Độ trễ trung vị P50 | Độ trễ phân vị P95 | Cold-start (lần đầu) |
+|---|---|---|---|---|
+| qwen2.5:7b | 10/10 (100%) | 407 ms (~0,41 s) | 612 ms | 32,8 s |
+| tinix-lm | 9/10 (90%) | 123 ms (~0,12 s) | 134 ms | 13,4 s |
+| qwen3:4b-instruct | 9/10 (90%) | 1.537 ms (~1,54 s) | 1.993 ms | 50,6 s |
+
+> **Môi trường đo tham khảo**: Ubuntu 22.04, CPU Intel i7-12700, RAM 32 GB, GPU NVIDIA RTX 3060 12 GB VRAM, Ollama v0.9.x. Lần gọi đầu (cold-start) được tách riêng; P50 tính bằng trung vị (`statistics.median` trên 9 lượt warm), P95 tính bằng nearest-rank ceiling (lượt thứ 9).
+
 
 ## Lưu ý
 

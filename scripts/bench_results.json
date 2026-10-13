@@ -73,8 +73,9 @@
       ]
     ],
     "accuracy": 0.9,
-    "latency_p50_ms": 1588,
-    "latency_p95_ms": 1993
+    "latency_p50_ms": 1537,
+    "latency_p95_ms": 1993,
+    "cold_start_ms": 50613
   },
   "tinix-lm:latest": {
     "rows": [
@@ -150,8 +151,9 @@
       ]
     ],
     "accuracy": 0.9,
-    "latency_p50_ms": 125,
-    "latency_p95_ms": 134
+    "latency_p50_ms": 123,
+    "latency_p95_ms": 134,
+    "cold_start_ms": 13436
   },
   "qwen2.5:7b": {
     "rows": [
@@ -227,7 +229,8 @@
       ]
     ],
     "accuracy": 1.0,
-    "latency_p50_ms": 412,
-    "latency_p95_ms": 612
+    "latency_p50_ms": 407,
+    "latency_p95_ms": 612,
+    "cold_start_ms": 32762
   }
 }

@@ -1,5 +1,7 @@
 # Form phân loại phản hồi khách hàng bằng n8n - Bộ kiểm thử
 
+> Mã nguồn: [tnt305/n8n-feedback-classifier](https://github.com/tnt305/n8n-feedback-classifier)
+
 ## Kiến trúc workflow
 
 ```
@@ -14,12 +16,12 @@ Text Classifier  ◄──── Chat Model (Ollama hoặc OpenAI)
         └── nhánh 3: Other   → Form Ending "Ket qua - Khac"  (fallback)
 ```
 
-- File import: `phan-loai-phan-hoi.workflow.json` (OpenAI) hoặc `phan-loai-phan-hoi-ollama.workflow.json` (Ollama local, miễn phí). Mở n8n → **Import from File**.
-- Credential: `ollamaApi` (Base URL `http://localhost:11434`) hoặc `openAiApi` tùy bản.
+- File import: `workflows/feedback-classifier-openai.workflow.json` (OpenAI) hoặc `workflows/feedback-classifier-ollama.workflow.json` (Ollama local, miễn phí). Mở n8n → **Import from File**.
+- Credential: `ollamaApi` (Base URL `http://localhost:11434` hoặc `http://host.docker.internal:11434`) hoặc `openAiApi` tùy bản.
 - `responseMode: lastNode` = Respond When "Workflow Finishes" → người dùng thấy đúng trang Form Ending của nhánh AI chọn, ngay trên trình duyệt.
 - `options.fallback: other` tạo nhánh thứ 4 để bắt phản hồi không rõ nhóm (spam, nội dung rỗng nghĩa) thay vì bị drop.
 - URL test: bấm **Execute workflow** rồi mở Test URL; production: `/form/phan-hoi-khach-hang` sau khi Publish.
-- Đã kiểm chứng import bằng `n8n import:workflow` trên image `n8nio/n8n:latest` - cả 2 file đều "Successfully imported".
+- Đã kiểm chứng import bằng `n8n import:workflow` trên image `n8nio/n8n:1.110.1` - cả 2 file đều "Successfully imported".
 
 ## Bảng kiểm thử 10 phản hồi mẫu - kết quả chạy thật
 
@@ -40,10 +42,13 @@ Môi trường đo: Ollama local, `temperature: 0`, `format: json`, prompt giố
 
 ## Tổng hợp
 
-| Model | Accuracy | Latency P50 | Latency max (ổn định) | Cold-start (lần gọi đầu) |
-|-------|----------|-------------|------------------------|--------------------------|
+| Model | Accuracy | Latency P50 | Latency P95 | Cold-start (lần gọi đầu) |
+|-------|----------|-------------|-------------|--------------------------|
 | qwen2.5:7b | 10/10 | ~407 ms | 612 ms | 32.8 s |
 | tinix-lm | 9/10 | ~123 ms | 134 ms | 13.4 s |
 | qwen3:4b-instruct | 9/10 | ~1537 ms | 1993 ms | 50.6 s |
 
-Nhận xét: case 10 (spam quảng cáo) là điểm khó chung - hai model 4B đều phân sai thành `gop_y`, chỉ qwen2.5:7b nhận ra `other`. Script tái hiện: `bench_classifier.py`, dữ liệu thô: `bench_results.json`.
+> **Môi trường đo tham khảo**: Ubuntu 22.04, CPU Intel i7-12700, RAM 32 GB, GPU NVIDIA RTX 3060 12 GB VRAM, Ollama v0.9.x. Lần gọi đầu (cold-start) được tách riêng; P50 tính bằng trung vị (`statistics.median` trên 9 lượt warm), P95 tính bằng nearest-rank ceiling (lượt thứ 9).
+
+Nhận xét: case 10 (spam quảng cáo) là điểm khó chung - hai model 4B đều phân sai thành `gop_y`, chỉ qwen2.5:7b nhận ra `other`. Script tái hiện: `scripts/bench_classifier.py`, dữ liệu thô: `scripts/bench_results.json`.
+
